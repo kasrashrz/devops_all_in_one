@@ -2,8 +2,8 @@
 --EVERY NEW COMMAND WILL BE INSERTED HERE--
 --THEIR USAGE, AND A BIT OF DESCRIPTION--
 
-2024-11-09
-==========
+## 2024-11-09
+## ==========
 modinfo (module info)
 systemctl cat $SERVICE_NAME (shows service config file)
 systemctl is_active $SERVICE_NAME
