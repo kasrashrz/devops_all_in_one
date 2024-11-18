@@ -1,0 +1,8 @@
+#!/bin/bash
+# Backup a directory and store it in a backup directory with a timestamp
+SOURCE="/home/invoker/Desktop/"
+DEST="/home/invoker/Desktop/devops/LPIC/useful_bash/backup"
+TIMESTAMP=$(date "+%Y%m%d%H%M%S")
+#echo $TIMESTAMP
+tar -czvf $DEST/backup/$TIMESTAMP.tar.tgz -A $SOURCE
+echo "Backup completed: $DEST/backup/$TIMESTAMP.tar.gz"
