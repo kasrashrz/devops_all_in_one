@@ -16,17 +16,33 @@ $systemctl set-default multi-user.target (set default target)\
 ### Debian package management
 
 #### Installing packages
-$ apt-get install XXX
-$ apt-get install -s XXX (dry run / simulation)
-$ apt-get install --download-only XXX (savet at /var/cache/apt/archives/)
-$ apt-get download tmux (saved at current dir)
+$ apt-get install XXX\
+$ apt-get install -s XXX (dry run / simulation)\
+$ apt-get install --download-only XXX (savet at /var/cache/apt/archives/)\
+$ apt-get download tmux (saved at current dir)\
 
 #### Removing packages
-$ apt-get remove XXX
-$ apt-get autoremove XXX (removes XXX + its dependencies)
-$ apt-get autoremove
+$ apt-get remove XXX\
+$ apt-get autoremove XXX (removes XXX + its dependencies)\
+$ apt-get autoremove\
 
 #### Searching for packages
-$ apt-cache search "tiny window"
-$ apt search grub2
+$ apt-cache search "tiny window"\
+$ apt search grub2\
 
+#### Upgrading packages
+$ apt-get install \
+$ apt-get upgrade \
+$ apt-get dist-upgrade \
+
+#### Reconfiguring packages
+$ dpkg-reconfigure tzdata \
+$ dpkg -s bzr (install without depencies) \
+$ dpkg -i (install) \
+$ dpkg -I OR dpkg --info \
+$ dpkg -P OR dpkg --purge \
+
+``` 
+$ dpkg -i abcd
+$ SOME OTHER COMMAND
+```
