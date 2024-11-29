@@ -61,8 +61,20 @@ $ dpkg -I OR dpkg --info \
 $ dpkg -P OR dpkg --purge \
 
 ```
-
+## 2024-11-24
 ### RPM & YUM Package management
 
+#### Important paths are:
+
+```
+/etc/yum.conf\
+/etc/yum.repos.d/\
+```
 
 
+```
+$
+$
+$
+$
+```
