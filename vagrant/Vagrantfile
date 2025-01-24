@@ -1,0 +1,51 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrant configuration
+Vagrant.configure("2") do |config|
+
+  # Specify the box to use
+  config.vm.box = "bento/ubuntu-20.04"
+
+  # Optional: Disable automatic box updates
+  # config.vm.box_check_update = false
+
+  # Configure network settings
+  # Uncomment and configure based on your requirements:
+  
+  # Forwarded port: Access guest ports via localhost
+  # Example: Access port 80 on guest via localhost:8080
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # Private network: Assign a static IP to the guest VM
+  # config.vm.network "private_network", ip: "192.168.33.10"
+
+  # Public network: Make the VM accessible on your local network
+  # config.vm.network "public_network"
+
+  # Shared folder: Sync folders between host and guest
+  # Host path "../data" is mapped to "/vagrant_data" on the guest
+  # config.vm.synced_folder "../data", "/vagrant_data"
+
+  # VirtualBox-specific configuration
+  config.vm.provider "virtualbox" do |vb|
+    # Disable GUI
+    vb.gui = false
+
+    # Set memory and CPU for the VM
+    vb.memory = "2048"
+    vb.cpus = 2
+
+    # Optional: Enable VirtualBox logs for debugging
+    # vb.customize ["modifyvm", :id, "--log", "on"]
+  end
+
+  # Provisioning: Install software/configure the VM
+  # Example: Use a shell script for provisioning
+  config.vm.provision "shell", inline: <<-SHELL
+    apt-get update
+    apt-get install -y nginx
+  SHELL
+
+end
+
