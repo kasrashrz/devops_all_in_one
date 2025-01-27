@@ -1,0 +1,37 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+# ENV["LC_ALL"] = "en_US.UTF-8"
+# ENV["TEST"] = "TEST_PASSING_OUT"
+# Vagrant configuration
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-20.04"
+  (1..4).each do |i|
+    # Specify the box to use
+    config.vm.define "node#{i}" do |node|
+      config.vm.network "private_network", ip: "192.168.33.1#{i}"
+      # config.vm.network "forwarded_port", guest: 80, host: "808#{i}"
+      config.vm.synced_folder "./packages", "/vagrant_data"
+      config.vm.hostname = "vm#{i}"
+      node.vm.provision "shell", inline: "dpkg -i /vagrant_data/nginx_offline.deb"
+    end
+  end
+
+    # Private network: Assign a static IP to the guest VM
+    # Public network: Make the VM accessible on your local network
+    # config.vm.network "public_network"        
+    # Shared folder: Sync folders between host and guest
+    # Host path "../data" is mapped to "/vagrant_data" on the guest
+    # config.vm.synced_folder "../data", "/vagrant_data"
+    config.vm.hostname = "vm"
+    # VirtualBox-specific configuration
+    config.vm.provider "virtualbox" do |vb|
+      # Disable GUI
+      vb.gui = false
+      # Set memory and CPU for the VM
+      vb.memory = "2048"
+      vb.cpus = 2
+  #    vb.name = "kasra_2"
+  end
+    config.vm.provision :shell, path: "instructions.sh"
+end
+
