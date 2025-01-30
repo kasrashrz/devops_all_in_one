@@ -12,6 +12,7 @@ Vagrant.configure("2") do |config|
       # config.vm.network "forwarded_port", guest: 80, host: "808#{i}"
       config.vm.synced_folder "./packages", "/vagrant_data"
       config.vm.hostname = "vm#{i}"
+      config.disksize.size = '5G'
       node.vm.provision "shell", inline: "dpkg -i /vagrant_data/nginx_offline.deb"
     end
   end
