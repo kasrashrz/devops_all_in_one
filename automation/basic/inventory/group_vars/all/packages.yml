@@ -1,0 +1,6 @@
+# pakages list
+packages:
+  - vim
+  - wget
+  - git
+  - cowsay

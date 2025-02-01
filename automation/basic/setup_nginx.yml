@@ -1,0 +1,7 @@
+---
+- hosts: webservers
+  become: true
+  gather_facts: yes
+  name: setup nginx on vms
+  roles:
+    - {role: nginx, become: True, tags: setup_nginx}
