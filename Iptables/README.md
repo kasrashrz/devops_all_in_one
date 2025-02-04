@@ -2,7 +2,7 @@
 
 #### iptables commands format
 
-![alt text] (./iptables_command_help.png)
+![alt text] (https://www.polarsparc.com/xhtml/images/iptables-4.png)
 
 ```
 $ iptables -t <TABLE> <OPTION> <CHAIN_NAME> <MATCH_CRITERIA> -j <TARGET>
