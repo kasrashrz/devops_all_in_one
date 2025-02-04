@@ -1,0 +1,7 @@
+---
+- hosts: webservers
+  become: True
+  gather_facts: yes
+  name: setup some iptables on servers
+  roles:
+    - { role: iptables, become: true, tags: setup_iptables }

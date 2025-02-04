@@ -1,0 +1,36 @@
+all:
+  children:
+    webservers:
+      hosts:
+        # 192.168.56.101:
+        node_1:
+          ansible_host: 127.0.0.1
+          ansible_user: vagrant
+          ansible_port: 2222
+          ansible_private_key_file: /Users/kasrashirazi/Desktop/devops/vagrant/pro/.vagrant/machines/node1/virtualbox/private_key
+
+        # 192.168.56.102:
+        node_2:
+          ansible_host: 127.0.0.1
+          ansible_user: vagrant
+          ansible_port: 2200
+          ansible_private_key_file: /Users/kasrashirazi/Desktop/devops/vagrant/pro/.vagrant/machines/node2/virtualbox/private_key
+
+    dbservers:
+      hosts:
+        # 192.168.56.103:
+        node_3:
+          ansible_host: 127.0.0.1
+          ansible_user: vagrant
+          ansible_port: 2201
+          ansible_private_key_file: /Users/kasrashirazi/Desktop/devops/vagrant/pro/.vagrant/machines/node3/virtualbox/private_key
+    utilservers:
+      hosts:
+        # 192.168.56.104:
+        node_4:
+          ansible_host: 127.0.0.1
+          ansible_user: vagrant
+          ansible_port: 2202
+          ansible_private_key_file: /Users/kasrashirazi/Desktop/devops/vagrant/pro/.vagrant/machines/node4/virtualbox/private_key
+        # 192.168.56.104:
+        #   ansible_port: 2222
