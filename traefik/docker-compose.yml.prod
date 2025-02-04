@@ -1,9 +1,4 @@
-### My experience through iptables, some important commands & confs
-
-#### Docker-compose file to fire up your traefik
-
-```
-version: '3.8'
+version: "3"
 
 networks:
   web_net:
@@ -80,4 +75,3 @@ services:
       - traefik.http.services.metrics.loadbalancer.server.port=8082
     networks:
       - web_net
-```
