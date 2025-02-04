@@ -1,4 +1,4 @@
-### My experience through iptables & some important commands
+### My experience through iptables, some important commands & confs
 
 #### iptables commands format
 
