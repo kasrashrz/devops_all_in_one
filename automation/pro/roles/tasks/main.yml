@@ -1,0 +1,51 @@
+---
+- name: install required packages
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ packages }}"
+  tags: setup_required_packages
+
+- name: ensure nginx is the latest version
+
+- hosts: master
+  become: yes
+  tasks:
+    - name: Install kubeadm, kubelet, and kubectl
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items: " {{  kube_packages }}"
+      tags: setup_kube
+
+    - name: Initialize Kubernetes master
+      command: kubeadm init --pod-network-cidr=10.244.0.0/16
+      register: kubeadm_output
+      ignore_errors: yes
+      tags: setup_kube
+
+    - name: Set up kubectl for the current user
+      command: "{{ item }}"
+      with_items:
+        - "mkdir -p $HOME/.kube"
+        - "cp /etc/kubernetes/admin.conf $HOME/.kube/config"
+        - "chown $(id -u):$(id -g) $HOME/.kube/config"
+      tags: setup_kube
+
+    - name: Install Calico network plugin
+      command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+      when: "'calico' in kubeadm_output.stdout"
+      tags: setup_kube
+
+- hosts: workers
+  become: yes
+  tasks:
+    - name: Install kubeadm, kubelet, and kubectl
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ kube_packages }}"
+
+    - name: Join worker nodes to the cluster
+      command: "{{ hostvars['master']['kubeadm_output']['stdout_lines'][0] }}"
+      when: "'kubeadm join' in hostvars['master']['kubeadm_output']['stdout']"

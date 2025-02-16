@@ -1,0 +1,12 @@
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - software-properties-common
+  - docker.io
+  - containerd
+
+kube-packages:
+  - kubeadm
+  - kubelet
+  - kubectl

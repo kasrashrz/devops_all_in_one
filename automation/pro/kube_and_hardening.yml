@@ -1,0 +1,9 @@
+---
+- hosts: all
+  become: true
+  gather_facts: yes
+  name: setup kubernetes & harden vms
+  roles:
+    - { role: req_packages, become: True, tags: setup_required_packages }
+    - { role: kube, become: True, tags: setup_kube }
+    - { role: hardening, become: True, tags: setup_harden }
