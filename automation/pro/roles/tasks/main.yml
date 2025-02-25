@@ -6,8 +6,6 @@
   with_items: "{{ packages }}"
   tags: setup_required_packages
 
-- name: ensure nginx is the latest version
-
 - hosts: master
   become: yes
   tasks:
@@ -45,7 +43,24 @@
         name: "{{ item }}"
         state: present
       with_items: "{{ kube_packages }}"
+      tags: setup_kube
 
     - name: Join worker nodes to the cluster
       command: "{{ hostvars['master']['kubeadm_output']['stdout_lines'][0] }}"
       when: "'kubeadm join' in hostvars['master']['kubeadm_output']['stdout']"
+      tags: setup_kube
+
+- hosts: all
+  become: yes
+  tasks:
+    - name: Apply hardening to servers
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ kube_packages }}"
+      tags: setup_kube
+
+    - name: Join worker nodes to the cluster
+      command: "{{ hostvars['master']['kubeadm_output']['stdout_lines'][0] }}"
+      when: "'kubeadm join' in hostvars['master']['kubeadm_output']['stdout']"
+      tags: setup_kube
