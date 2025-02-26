@@ -32,7 +32,7 @@ services:
       - --metrics.prometheus=true
       - --entryPoints.metrics.address=:8082
       - --metrics.prometheus.entryPoint=metrics
-      - --certificatesresolvers.mycert.acme.email=cert@mecan.ir
+      - --certificatesresolvers.mycert.acme.email=cert@tamam.ir
       - --certificatesresolvers.mycert.acme.storage=/acme/acme.json
       - --certificatesresolvers.mycert.acme.tlschallenge=true
     ports:
@@ -50,7 +50,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=web_net
-      - traefik.http.middlewares.web-auth.basicauth.users=MeCan:{SHA}CoRQvjVmLEf/Boi7dqaR84EijYo=
+      - traefik.http.middlewares.web-auth.basicauth.users=tamam:{SHA}CoRQvjVmLEf/Boi7dqaR84EijYo=
       - traefik.http.routers.traefik.middlewares=https-redirect
       - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
       - traefik.http.routers.traefik.entrypoints=http
