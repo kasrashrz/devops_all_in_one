@@ -1,4 +1,4 @@
-### My experience through iptables, some important commands & confs
+### My experience through traefik, some important commands & confs
 
 #### Docker-compose file to fire up your traefik
 

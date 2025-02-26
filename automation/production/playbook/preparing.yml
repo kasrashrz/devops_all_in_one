@@ -1,0 +1,7 @@
+---
+- hosts: all
+  become: true
+  gather_facts: yes
+  name: hardening and tuning OS
+  roles:
+    - { role: roles/preparing_server }
