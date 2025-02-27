@@ -1,0 +1,4 @@
+- targets:
+  - node.monlog-server.tamam.ir
+  # - node.repo-server.tamam.ir
+  # - node.tools-server.tamam.ir
