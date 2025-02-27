@@ -19,7 +19,7 @@ datasources:
       httpHeaderName1: "X-Scope-OrgID"
       alertmanagerUid: "alertmanager"
     secureJsonData:
-      httpHeaderValue1: "MeCan"
+      httpHeaderValue1: "tamam"
     isDefault: true
 
   - name: Mimir Alertmanager
@@ -34,4 +34,4 @@ datasources:
       httpHeaderName1: "X-Scope-OrgID"
       implementation: "cortex"
     secureJsonData:
-      httpHeaderValue1: "MeCan"
+      httpHeaderValue1: "tamam"

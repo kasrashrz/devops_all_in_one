@@ -2,8 +2,8 @@ global:
   scrape_interval:     30s
   evaluation_interval: 30s
   external_labels:
-    cluster: MeCan
-    namespace: MeCan
+    cluster: tamam
+    namespace: tamam
 
 rule_files:
   - /etc/prometheus/alerts/rules.yaml
@@ -40,7 +40,7 @@ scrape_configs:
     static_configs:
       - targets: ['traefik:8082']
 
-  - job_name: MeCan/mimir
+  - job_name: tamam/mimir
     static_configs:
       - targets: ["mimir1:8080"]
         labels:
@@ -55,6 +55,6 @@ scrape_configs:
 remote_write:
   - url: http://load-balancer:9009/api/v1/push
     # Add X-Scope-OrgID header so that Mimir knows what tenant the remote write data should be stored in.
-    # In this case, our tenant is "MeCan"
+    # In this case, our tenant is "tamam"
     headers:
-      X-Scope-OrgID: MeCan
+      X-Scope-OrgID: tamam

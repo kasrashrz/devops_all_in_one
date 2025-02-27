@@ -62,7 +62,7 @@ This command starts:
 
 - Grafana Mimir
   - Three instances of monolithic-mode Mimir to provide high availability
-  - Multi-tenancy enabled (tenant ID is `MeCan`)
+  - Multi-tenancy enabled (tenant ID is `tamam`)
 - [Minio](https://min.io/)
   - S3-compatible persistent storage for blocks, rules, and alerts
 - Prometheus
