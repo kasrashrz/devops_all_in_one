@@ -1,0 +1,11 @@
+stages:
+  - build
+
+
+build-prac-1:
+  stage: build
+  script: echo build-prac-1
+
+build-prac-2:
+  stage: build
+  script: echo build-prac-2
