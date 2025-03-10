@@ -1,0 +1,205 @@
+# Define global variables for reuse across jobs
+variables:
+  APP_NAME: "my-complex-app"
+  DOCKER_REGISTRY: "registry.gitlab.com/my-group/$APP_NAME"
+  STAGING_ENV: "staging"
+  PROD_ENV: "production"
+  NODE_VERSION: "16"
+  CACHE_KEY: "node-$NODE_VERSION"
+
+# Define stages in the pipeline
+stages:
+  - preflight
+  - build
+  - test
+  - deploy_review
+  - deploy_staging
+  - deploy_production
+  - post_deploy
+
+# Default settings applied to all jobs
+default:
+  image: node:$NODE_VERSION
+  retry: 2 # Retry failed jobs up to 2 times
+  interruptible: true # Allow jobs to be interrupted if superseded
+  before_script:
+    - npm install -g npm@latest # Ensure latest npm
+    - npm ci # Install dependencies using lockfile
+
+# Cache configuration to speed up builds
+cache:
+  key: "$CACHE_KEY"
+  paths:
+    - node_modules/
+    - .npm/
+
+# Include external CI/CD configuration for reusable templates
+include:
+  - remote: "https://gitlab.com/gitlab-org/gitlab/-/raw/main/lib/gitlab/ci/templates/Nodejs.gitlab-ci.yml"
+  - local: "/ci/deploy_templates.yml" # Hypothetical local template file
+
+# Hidden job for common rules
+.common_rules: &common_rules
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+      when: always
+    - when: on_success
+
+# Preflight: Code quality checks
+lint:
+  stage: preflight
+  script:
+    - npm run lint # Assume a lint script in package.json
+  allow_failure: true # Won't block pipeline if lint fails
+  extends: *common_rules
+
+# Build jobs for frontend and backend
+build_frontend:
+  stage: build
+  script:
+    - cd frontend
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist/
+    expire_in: 1 week
+  extends: *common_rules
+
+build_backend:
+  stage: build
+  script:
+    - cd backend
+    - npm run build
+  artifacts:
+    paths:
+      - backend/dist/
+    expire_in: 1 week
+  extends: *common_rules
+
+# Test jobs with parallel execution
+test_frontend:
+  stage: test
+  needs:
+    - build_frontend
+  script:
+    - cd frontend
+    - npm run test:unit
+  dependencies:
+    - build_frontend
+  extends: *common_rules
+
+test_backend:
+  stage: test
+  needs:
+    - build_backend
+  parallel: 3 # Run 3 instances in parallel (e.g., split test suites)
+  script:
+    - cd backend
+    - npm run test:unit -- --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL
+  dependencies:
+    - build_backend
+  extends: *common_rules
+
+# Docker build and push for production-ready images
+docker_build:
+  stage: build
+  image: docker:20.10
+  services:
+    - docker:dind # Docker-in-Docker for building images
+  variables:
+    DOCKER_TLS_CERTDIR: "" # Disable TLS for simplicity
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t $DOCKER_REGISTRY:$CI_COMMIT_SHA .
+    - docker push $DOCKER_REGISTRY:$CI_COMMIT_SHA
+  artifacts:
+    reports:
+      dotenv: docker.env # Export variables for downstream jobs
+    paths:
+      - docker.env
+  extends: *common_rules
+
+# Deploy to review apps (dynamic environments for MRs)
+deploy_review:
+  stage: deploy_review
+  needs:
+    - docker_build
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    url: https://$CI_COMMIT_REF_SLUG.$APP_NAME.review.com
+    on_stop: stop_review
+  script:
+    - echo "Deploying to review env: $CI_ENVIRONMENT_NAME"
+    - ./deploy_scripts/deploy_to_k8s.sh review # Hypothetical script
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - when: never
+
+stop_review:
+  stage: deploy_review
+  needs:
+    - deploy_review
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    action: stop
+  script:
+    - echo "Stopping review env: $CI_ENVIRONMENT_NAME"
+    - ./deploy_scripts/cleanup_k8s.sh review
+  when: manual
+  extends: *common_rules
+
+# Deploy to staging
+deploy_staging:
+  stage: deploy_staging
+  needs:
+    - test_frontend
+    - test_backend
+    - docker_build
+  environment:
+    name: $STAGING_ENV
+    url: https://staging.$APP_NAME.com
+  script:
+    - echo "Deploying to staging"
+    - ./deploy_scripts/deploy_to_k8s.sh staging
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+    - when: never
+
+# Manual deployment to production with approval
+deploy_production:
+  stage: deploy_production
+  needs:
+    - deploy_staging
+  environment:
+    name: $PROD_ENV
+    url: https://$APP_NAME.com
+    kubernetes:
+      namespace: production
+      agent: my-group/k8s-agent:prod-agent
+  script:
+    - echo "Deploying to production"
+    - ./deploy_scripts/deploy_to_k8s.sh production
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+      when: manual
+    - when: never
+  allow_failure: false
+
+# Post-deploy: Smoke tests or notifications
+smoke_test_production:
+  stage: post_deploy
+  needs:
+    - deploy_production
+  script:
+    - curl --fail https://$APP_NAME.com/healthcheck
+    - echo "Smoke test passed!"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+      when: on_success
+    - when: never
