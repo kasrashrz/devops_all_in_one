@@ -1,5 +1,7 @@
 ## My experience through docker swarm, some important commands & confs
 
+![alt text](images/Docker-swarm-mode-architecture.png "Title")
+
 ### Managing swarm
 
 ```bash
@@ -34,6 +36,48 @@ $ docker service logs SERVICE_NAME
 
 `Stacks` are Swarm’s way of managing multiple services defined in a single file.
 
+```yaml
+version: "3.8"
+services:
+  web:
+    image: nginx
+    ports:
+      - "8080:80"
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - webdata:/usr/share/nginx/html
+
+volumes:
+  webdata:
+```
+
+### deploy section
+
+```yaml
+deploy:
+  replicas: 2
+  restart_policy:
+    condition: on-failure
+  placement:
+    constraints:
+      - node.labels.A == B
+      - node.role == worker
+      - node.labels.test_node_label == true
+```
+
+<br>
+using `constraints` we could assign a service to deploy on some specific nodes, since our labels work in a `<key>=<value>` format, we can access them like i did above
+<br>
+
 ```bash
 $ docker stack deploy -c docker-compose.yml myapp # deploy our program using compose file
+$ docker stack ls
+$ docker stack rm STACK_NAME
+$ docker stack ps STACK_NAME # List the tasks in the stack
 ```
+
+
+### Load balancing, overlays, and scheduling

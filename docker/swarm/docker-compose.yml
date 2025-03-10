@@ -8,6 +8,16 @@ services:
       replicas: 2
       restart_policy:
         condition: on-failure
+      resources:
+        limits:
+          memory: 1G
+          cpus: "0.1"
+      placement:
+        constraints:
+          - node.labels.A == B
+          # - node.role == worker
+          # - node.labels.test_node_label == true
+
     volumes:
       - webdata:/usr/share/nginx/html
 
