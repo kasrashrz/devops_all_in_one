@@ -1,0 +1,110 @@
+stages:
+  - installation
+  - build
+  - push
+  - deploy
+
+default:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  retry:
+    max: 2
+    when: always
+  before_script:
+    - echo "{\"auths\":{\"reg.tamam.one\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+  interruptible: false
+  tags:
+    - kaniko
+
+variables:
+  SSH_PORT: 8011
+  SSH_USER: root
+  IMAGE_PATH: reg.tamam.one/practice/node_kaniko
+  SERVICE_PATH: /home  # Changed to /home
+  VERSION: v1.0.${CI_PIPELINE_ID}
+
+dependency_installation:
+  stage: installation
+  image: node:18-slim
+  before_script: []
+  cache:
+    key:
+      files:
+        - app/package-lock.json
+    paths:
+      - app/node_modules/
+    policy: pull-push
+  script:
+    - cd app
+    - npm install --production
+  rules:
+    - if: '$CI_COMMIT_BRANCH'
+      changes:
+        - app/package.json
+        - app/package-lock.json
+      when: always
+    - when: on_success
+
+build_job:
+  stage: build
+  cache:
+    key:
+      files:
+        - app/package-lock.json
+    paths:
+      - app/node_modules/
+    policy: pull
+  script:
+    - echo "Building the image"
+    - /kaniko/executor --context "$CI_PROJECT_DIR" --dockerfile "$CI_PROJECT_DIR/Dockerfile" --no-push
+  rules:
+    - if: '$CI_COMMIT_BRANCH'
+      exists:
+        - Dockerfile
+      when: always
+
+push_job:
+  stage: push
+  needs:
+    - build_job
+  cache:
+    key:
+      files:
+        - app/package-lock.json
+    paths:
+      - app/node_modules/
+    policy: pull
+  script:
+    - echo "Pushing image to $IMAGE_PATH:$VERSION"
+    - /kaniko/executor --context "$CI_PROJECT_DIR" --dockerfile "$CI_PROJECT_DIR/Dockerfile" --destination "$IMAGE_PATH:$VERSION" --cache=true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+
+deploy_to_swarm:
+  stage: deploy
+  needs:
+    - push_job
+  image: alpine
+  before_script:
+    - apk add --no-cache openssh-client docker-cli
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - echo "Host 188.245.101.139\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" > ~/.ssh/config
+  script:
+    - echo "Deploying stack to Swarm at $SSH_USER@188.245.101.139:$SSH_PORT"
+    - | 
+      ssh -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USER@188.245.101.139 
+      "
+        sed -i "s/PIPELINE_ID/${VERSION}/g" .env
+        scp -P $SSH_PORT -o StrictHostKeyChecking=no docker-compose.yml $SSH_USER@188.245.101.139:${SERVICE_PATH}/
+        scp -P $SSH_PORT -o StrictHostKeyChecking=no .env $SSH_USER@188.245.101.139:${SERVICE_PATH}/
+        docker stack deploy -c ${SERVICE_PATH}/docker-compose.yml node_kaniko
+      "
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+  variables:
+    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
